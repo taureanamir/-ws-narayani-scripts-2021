@@ -1,0 +1,10 @@
+Flow_output_files/
+Forecast_files/
+Stage_output_files/
+backup_data_archive/
+cachedir/
+discharge_error_correction/
+logs/
+rainfall_bias_correction/
+old-scripts/
+Flow_Stage_output_files/*.*
