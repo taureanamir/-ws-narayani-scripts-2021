@@ -13,7 +13,7 @@ STATIONS = {
             5: ['Jomsom','JOMSOM'],
             7: ['Kumalgaun','KUMALGAUN'],
             8: ['Rajaiya','RAJAIYA'],
-            9: ['Setidamauli','SETIDAMAULI_430.5'],
+            9: ['Setidamauli','SETIDAMAULI'],
             10: ['Sisaghat','SISAGHAT'],
             22: ['Kalikhola', 'KALIKHOLA']
           }
@@ -42,6 +42,7 @@ conn = mysql.connector.connect(
             port = db_port,
             database = db_name
       )
+cursor = conn.cursor()
 
 entry_date = datetime.today().strftime("%Y-%m-%d")
 rows_updated = 0
@@ -49,6 +50,7 @@ rows_inserted = 0
 
 for key in STATIONS:
   file_name = STATIONS[key][0] + "_flow_combine_stage.csv"
+  # print("Filename: {}".format(os.path.join(file_path, file_name)))
   with open(os.path.join(file_path, file_name),'r') as csvfile:
     csvfileReader = csv.reader(csvfile,delimiter=',')
     # Skip header of the CSV file.
@@ -65,12 +67,12 @@ for key in STATIONS:
 
       try:
         if conn.is_connected():
-          cursor = conn.cursor()
           cursor.execute("""SELECT * FROM simulated_discharge_wl_hec_hms 
                             WHERE fcst_date = %s 
                             AND station_id = %s""",(fcst_date, station_id))
           rows = cursor.fetchall()
           num_rows = len(rows)
+          # print("num_rows: {}".format(num_rows))
           if num_rows > 0:
             cursor.execute("""UPDATE 
                                 simulated_discharge_wl_hec_hms 
@@ -91,9 +93,15 @@ for key in STATIONS:
           conn.commit() 
       except Error as e:
         print(e)
+        # cursor.close()
+        # conn.close()
       finally:
-        cursor.close()
-        conn.close()
+        # cursor.close()
+        # conn.close()
+        pass
+
+cursor.close()
+conn.close()
 
 print("-------------------------------------")
 print("Number of rows inserted: {}".format(rows_inserted))

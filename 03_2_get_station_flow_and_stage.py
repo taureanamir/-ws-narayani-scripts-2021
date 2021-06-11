@@ -28,9 +28,9 @@ def get_flow_combine_and_stage(station_name, station_alias, station_id, dt_start
   makeDir(file_path)
 
   try:
-    dssfile = HecDss.open("/home/rimesnp/ws/Narayani_model_2021/model/2017_2021.dss",dt_start,dt_end)
-    flow = dssfile.get("//"+station_name+"/FLOW-COMBINE//1DAY/RUN:New_Run/")
-    stage = dssfile.get("//"+station_name+"/STAGE//1DAY/RUN:New_Run/")
+    dssfile = HecDss.open("/home/rimesnp/ws/Narayani_model_2021/model/New_Run.dss",dt_start,dt_end)
+    flow = dssfile.get("//"+station_name+"/FLOW-COMBINE//1DAY/RUN:NEW_RUN/")
+    stage = dssfile.get("//"+station_name+"/STAGE//1DAY/RUN:NEW_RUN/")
   except java.lang.Exception, e :
     # Take care of any missing data or errors
     MessageBox.showError(e.getMessage(), "Error reading data")
@@ -90,7 +90,7 @@ today = datetime.date.today()
 #==========================================================================================================+
 # START DATE 2 WEEKS AGO
 #==========================================================================================================+
-st_dt = today - datetime.timedelta(days=14)
+st_dt = today - datetime.timedelta(days=161)
 start_date = st_dt
 st_dt = st_dt.strftime("%d/%m/%Y")
 temp_st = st_dt.split('/')
@@ -132,7 +132,7 @@ stations = {
             5: ['Jomsom','JOMSOM'],
             7: ['Kumalgaun','KUMALGAUN'],
             8: ['Rajaiya','RAJAIYA'],
-            9: ['Setidamauli','SETIDAMAULI_430.5'],
+            9: ['Setidamauli','SETIDAMAULI'],
             10: ['Sisaghat','SISAGHAT'],
             22: ['Kalikhola', 'KALIKHOLA']
           }
