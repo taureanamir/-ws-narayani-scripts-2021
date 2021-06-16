@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from hec.script import *
 from hec.heclib.dss import *
 from hec.heclib.util import *
@@ -17,7 +18,7 @@ from datetime import timedelta
 def writetodss(location,forecast_d1,forecast_d2,forecast_d3,hec_dt):
   try:
     try:
-      dssfile = HecDss.open("/home/rimesnp/ws/Narayani_model_2020/model/Narayani4_TimeSeries.dss")
+      dssfile = HecDss.open("/home/rimesnp/ws/Narayani_model_2021/model/Narayani4_TimeSeries.dss")
       tsc = TimeSeriesContainer()
       tsc.fullName = "/NARAYANI/"+location+"/PRECIP-INC//1DAY/OBS/"
       start = HecTime(hec_dt,"0930")
@@ -89,22 +90,22 @@ basin_name = ['W650','W740','W750','W760','W800','W810','W820','W840',
 for i in range(len(basin_name)) :
   filename = basin_name[i]+'_'+dt
   # READ FILE
-  file_path = '/home/rimesnp/ws-narayani-scripts-2021/rainfall_bias_correction/'+basin_name[i]+'/'+basin_name[i]+'Corrected_forecast.csv'
-  rownum = 0
+  file_path = '/home/rimesnp/ws-narayani-scripts-2021/Forecast_files/'+basin_name[i]+'_'+str(dt)+'.txt'
   file = open(file_path,'r')
-  for row in file:
-    if rownum == 0:
-      fc_day1 = float(row.strip())
-      rownum = rownum + 1
-    elif rownum == 1:
-      fc_day2 = float(row.strip())
-      rownum = rownum + 1
-    elif rownum == 2:
-      fc_day3 = float(row.strip())
-      rownum = rownum + 1
-    #END OF FOR LOOP line
+  for ln in file:
+      ln = ln.split(' ')
+      ln = [ 0 if (ln[x] == 'Inf' or ln[x] == '' ) else ln[x] for x in range(len(ln))]
+      forecast_d1 = ln[0].strip()
+      forecast_d2 = ln[1].strip()
+      forecast_d3 = ln[2].strip()
+      fc1 = float(forecast_d1)
+      fc2 = float(forecast_d2)
+      fc3 = float(forecast_d3)
+   
+  #END OF FOR LOOP line
   #CALL FUNCTION TO WRITE DATA IN TIME SERIES FILE
-  writetodss(basin_name[i],fc_day1,fc_day2,fc_day3,hec_dt)
+  print(basin_name[i], fc1, fc2, fc3, hec_dt)
+  writetodss(basin_name[i], fc1, fc2, fc3, hec_dt)
   #END OF FOR LOOP i  
   file.close()
 # END OF PROGRAM 

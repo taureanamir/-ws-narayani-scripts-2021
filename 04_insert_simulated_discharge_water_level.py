@@ -1,8 +1,10 @@
+#!/usr/bin/python
 import os
 import csv
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
+import ConfigParser
 
 # constants
 STATIONS = {
@@ -21,27 +23,69 @@ STATIONS = {
 # config for connection to MYSQL database
 def set_db_conn():
   # global DB_USER, DB_PWD, DB_HOST, DB_NAME, DB_PORT, DB_RAISE_WARNINGS
-  DB_USER = os.environ['NPL_FLOOD_DB_USER']
-  DB_PWD = os.environ['NPL_FLOOD_DB_PWD']
-  DB_HOST = os.environ['NPL_FLOOD_DB_HOST']
-  DB_NAME = os.environ['NPL_FLOOD_DB']
-  DB_PORT = os.environ['NPL_FLOOD_DB_PORT']
+  config = ConfigParser.ConfigParser()
+  config.read("config")
+  DB_USER = config.get('DATABASE_CONFIG', 'NPL_FLOOD_DB_USER')
+  DB_PWD =  config.get('DATABASE_CONFIG', 'NPL_FLOOD_DB_PWD')
+  DB_HOST = config.get('DATABASE_CONFIG', 'NPL_FLOOD_DB_HOST')
+  DB_NAME = config.get('DATABASE_CONFIG', 'NPL_FLOOD_DB')
+  DB_PORT = config.get('DATABASE_CONFIG', 'NPL_FLOOD_DB_PORT')
   DB_RAISE_WARNINGS = True
-  return DB_USER, DB_PWD, DB_HOST, DB_NAME, DB_PORT, DB_RAISE_WARNINGS
+
+  # create mysql connection
+  conn = mysql.connector.connect(
+              host = DB_HOST,
+              user = DB_USER,
+              password = DB_PWD,
+              port = DB_PORT,
+              database = DB_NAME
+        )
+  return conn
+
+def insert_update_discharge_water_level(fcst_date, station_id, discharge, water_level, conn, cursor):
+  inserted = 0
+  updated = 0
+  try:
+    if conn.is_connected():
+      cursor.execute("""SELECT * FROM simulated_discharge_wl_hec_hms 
+                        WHERE fcst_date = %s 
+                        AND station_id = %s""",(fcst_date, station_id))
+      rows = cursor.fetchall()
+      num_rows = len(rows)
+      # print("num_rows: {}".format(num_rows))
+      if num_rows > 0:
+        cursor.execute("""UPDATE 
+                            simulated_discharge_wl_hec_hms 
+                          SET 
+                            discharge = %s, 
+                            water_level= %s, 
+                            entry_date = %s 
+                          WHERE 
+                            station_id = %s AND 
+                            fcst_date = %s""",(discharge, water_level, entry_date, station_id, fcst_date))
+        updated = 1
+      else:
+        cursor.execute("""INSERT INTO simulated_discharge_wl_hec_hms 
+                            (station_id,fcst_date,discharge,water_level,entry_date) 
+                            VALUES (%s,%s,%s,%s,%s)""",(station_id, fcst_date, discharge, water_level, entry_date))
+        inserted = 1
+
+      conn.commit() 
+  except Error as e:
+    print(e)
+    # cursor.close()
+    # conn.close()
+  finally:
+    # cursor.close()
+    # conn.close()
+    pass
+
+  return inserted, updated
 
 # Flow stage files location
 file_path = os.path.normpath("/home/rimesnp/ws-narayani-scripts-2021/Flow_Stage_output_files/")
 
-db_user, db_pwd, db_host, db_name, db_port, db_raise_warnings = set_db_conn()
-
-# create mysql connection
-conn = mysql.connector.connect(
-            host = db_host,
-            user = db_user,
-            password = db_pwd,
-            port = db_port,
-            database = db_name
-      )
+conn = set_db_conn()
 cursor = conn.cursor()
 
 entry_date = datetime.today().strftime("%Y-%m-%d")
@@ -64,41 +108,9 @@ for key in STATIONS:
       water_level = row[4]
 
       # print(fcst_date, station_name, station_id, discharge, water_level)
-
-      try:
-        if conn.is_connected():
-          cursor.execute("""SELECT * FROM simulated_discharge_wl_hec_hms 
-                            WHERE fcst_date = %s 
-                            AND station_id = %s""",(fcst_date, station_id))
-          rows = cursor.fetchall()
-          num_rows = len(rows)
-          # print("num_rows: {}".format(num_rows))
-          if num_rows > 0:
-            cursor.execute("""UPDATE 
-                                simulated_discharge_wl_hec_hms 
-                              SET 
-                                discharge = %s, 
-                                water_level= %s, 
-                                entry_date = %s 
-                              WHERE 
-                                station_id = %s AND 
-                                fcst_date = %s""",(discharge, water_level, entry_date, station_id, fcst_date))
-            rows_updated += 1
-          else:
-            cursor.execute("""INSERT INTO simulated_discharge_wl_hec_hms 
-                                (station_id,fcst_date,discharge,water_level,entry_date) 
-                                VALUES (%s,%s,%s,%s,%s)""",(station_id, fcst_date, discharge, water_level, entry_date))
-            rows_inserted += 1
-
-          conn.commit() 
-      except Error as e:
-        print(e)
-        # cursor.close()
-        # conn.close()
-      finally:
-        # cursor.close()
-        # conn.close()
-        pass
+      insert_cnt, update_cnt = insert_update_discharge_water_level(fcst_date, station_id, discharge, water_level, conn, cursor)
+      rows_inserted += insert_cnt
+      rows_updated += update_cnt
 
 cursor.close()
 conn.close()

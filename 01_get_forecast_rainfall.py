@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os
 import csv
 import time
@@ -16,21 +17,7 @@ def link_exists(url):
   except urllib2.HTTPError:
     return False 
 #============================================================================================+
-#============================================================================================+
-# FUNCTION TO GENERATE rainfall forecast file for Basin 
-#============================================================================================+
-def create_csv_forecast_file(bs_nm,fc1,fc2,fc3):
-  # FILENAME FOR BASIN FORECAST
-  file_name = '/home/rimesnp/ws-narayani-scripts-2021/rainfall_bias_correction/'+bs_nm+'/'+bs_nm+'Forecast.csv'
-  # CREATE FORECAST FILE AND SAVE
-  with open(file_name,'w') as csvfile:
-    csvfileWriter = csv.writer(csvfile,delimiter=',')
-    forecast_data = [['Fcst'],[fc1],[fc2],[fc3]]
-    csvfileWriter.writerows(forecast_data) 
-  # RUN RSCRIPT 
-  cmd_rscript = 'Rscript /home/rimesnp/ws-narayani-scripts-2021/rainfall_bias_correction/QmapNWP_Updated.R '+bs_nm
-  os.system(cmd_rscript) 
-#============================================================================================+
+
 ## dd/mm/yyyy format
 tm = (time.strftime("%d/%m/%Y"))
 tm = tm.split('/')
@@ -81,21 +68,3 @@ for i in range(len(basin_name)) :
   if link_url is True:
     cmd = 'wget '+data_link+' -P /home/rimesnp/ws-narayani-scripts-2021/Forecast_files/'
     os.system(cmd)
-    # read file
-    file_path = '/home/rimesnp/ws-narayani-scripts-2021/Forecast_files/'+filename+'.txt'
-    file = open(file_path,'r')
-    for line in file:
-      ln = line
-      ln = ln.split(' ')
-      forecast_d1 = ln[0].strip()
-      forecast_d2 = ln[1].strip()
-      forecast_d3 = ln[2].strip()
-      fc1 = float(forecast_d1)
-      fc2 = float(forecast_d2)
-      fc3 = float(forecast_d3)
-    #print fc1
-    #print fc2
-    #print fc3
-    # CREATE FORECAST FILE AND RUN R BIAS CORRECTION
-    create_csv_forecast_file(basin_name[i],fc1,fc2,fc3)
-    file.close()

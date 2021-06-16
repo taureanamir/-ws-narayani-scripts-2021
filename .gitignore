@@ -8,3 +8,4 @@ logs/
 rainfall_bias_correction/
 old-scripts/
 Flow_Stage_output_files/*.*
+config

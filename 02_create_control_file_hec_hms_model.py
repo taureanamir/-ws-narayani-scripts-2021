@@ -10,7 +10,7 @@ today = date.today()
 #print today.strftime("%-d %B %Y")
 current_date = today.strftime("%-d %B %Y")
 # DAY AFTER TOMORROW DATE
-day_after_tomorrow = today + timedelta(days=4)
+day_after_tomorrow = today + timedelta(days=2)
 day_after_tomorrow = day_after_tomorrow.strftime("%-d %B %Y")
 #print day_after_tomorrow 
 current_time = time.strftime("%I:%M:%S")

@@ -90,7 +90,7 @@ today = datetime.date.today()
 #==========================================================================================================+
 # START DATE 2 WEEKS AGO
 #==========================================================================================================+
-st_dt = today - datetime.timedelta(days=161)
+st_dt = today - datetime.timedelta(days=14)
 start_date = st_dt
 st_dt = st_dt.strftime("%d/%m/%Y")
 temp_st = st_dt.split('/')
@@ -139,3 +139,5 @@ stations = {
 
 for key in stations:
   get_flow_combine_and_stage(stations[key][1], stations[key][0], key, dt_start, dt_end, start_date, end_date)
+
+print("Writing flow and stage complete !!!")
