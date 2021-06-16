@@ -40,6 +40,15 @@ def writetodss(location,forecast_d1,forecast_d2,forecast_d3,hec_dt):
   finally :
     dssfile.close()
 #==============================================================================================+
+
+def clean_value(rainfall_value):
+  rainfall_value = rainfall_value.strip()
+  if (rainfall_value == 'Inf' or rainfall_value == ''):
+    return float(0)
+  else:
+    return float(rainfall_value)
+
+
 ## dd/mm/yyyy format
 tm = (time.strftime("%d/%m/%Y"))
 tm = tm.split('/')
@@ -90,17 +99,13 @@ basin_name = ['W650','W740','W750','W760','W800','W810','W820','W840',
 for i in range(len(basin_name)) :
   filename = basin_name[i]+'_'+dt
   # READ FILE
-  file_path = '/home/rimesnp/ws-narayani-scripts-2021/Forecast_files/'+basin_name[i]+'_'+str(dt)+'.txt'
+  file_path = '/home/rimesnp/ws-narayani-scripts-2021/Forecast_files/'+basin_name[i]+'_'+dt+'.txt'
   file = open(file_path,'r')
   for ln in file:
       ln = ln.split(' ')
-      ln = [ 0 if (ln[x] == 'Inf' or ln[x] == '' ) else ln[x] for x in range(len(ln))]
-      forecast_d1 = ln[0].strip()
-      forecast_d2 = ln[1].strip()
-      forecast_d3 = ln[2].strip()
-      fc1 = float(forecast_d1)
-      fc2 = float(forecast_d2)
-      fc3 = float(forecast_d3)
+      fc1 = clean_value(ln[0])
+      fc2 = clean_value(ln[1])
+      fc3 = clean_value(ln[2])
    
   #END OF FOR LOOP line
   #CALL FUNCTION TO WRITE DATA IN TIME SERIES FILE
